@@ -314,16 +314,29 @@ mod tests {
     use super::*;
     use egui_kittest::kittest::Queryable;
 
-    fn clear_button_harness(text: &str) -> egui_kittest::Harness<'static, String> {
-        egui_kittest::Harness::builder().build_ui_state(
-            |ui, text: &mut String| {
+    /// The search text and whether the icon font is installed yet
+    type SearchState = (String, bool);
+
+    fn clear_button_harness(text: &str) -> egui_kittest::Harness<'static, SearchState> {
+        let mut harness = egui_kittest::Harness::builder().build_ui_state(
+            |ui, (text, fonts_ready): &mut SearchState| {
+                // The icon font takes effect on the frame after it is installed, so the first draws nothing
+                if !*fonts_ready {
+                    crate::theme::install(ui.ctx());
+                    *fonts_ready = true;
+                    return;
+                }
+
                 ui.horizontal(|ui| {
-                    ui.text_edit_singleline(text);
+                    let field = ui.text_edit_singleline(text);
+                    name(&field, egui::Role::SearchInput, "Search");
                     search_clear_button(ui, text);
                 });
             },
-            text.to_string(),
-        )
+            (text.to_string(), false),
+        );
+        harness.run();
+        harness
     }
 
     #[test]
@@ -332,7 +345,7 @@ mod tests {
         harness.get_by_label("Clear search").click();
         harness.run();
 
-        assert!(harness.state().is_empty());
+        assert!(harness.state().0.is_empty());
     }
 
     #[test]
