@@ -1,0 +1,27 @@
+name: Debug
+on:
+  push:
+    branches: [ci-debug]
+permissions:
+  contents: read
+jobs:
+  gate:
+    uses: storytold/craft-common-actions/.github/workflows/gate.yml@main
+    with:
+      craft-fonts-ref: 3d9ab3a132ed0eff457e424226a435a901da30d3
+      os: '["ubuntu-24.04"]'
+      toolchain: "1.96.0"
+      tools: ""
+      targets: ""
+      packages: >-
+        libxkbcommon-dev libwayland-dev libx11-dev libxrandr-dev libxi-dev libgl1-mesa-dev
+        libgtk-3-dev
+      command: |
+        set +e
+        cargo test -p materialcraft-ui-egui --lib widgets::tests -- --nocapture --test-threads=1 > /tmp/out.txt 2>&1
+        code=$?
+        msg=$(grep -E "panicked|assert|Error|error\[" -A8 /tmp/out.txt | head -40 | tr -d '\r' | sed 's/%/%25/g' | awk '{printf "%s%%0A", $0}')
+        echo "::error title=dbg::${msg}"
+        tail -15 /tmp/out.txt | tr -d '\r' | awk '{printf "%s%%0A", $0}' | sed 's/^/::error title=tail::/'
+        echo
+        exit $code
