@@ -256,11 +256,7 @@ pub fn color_swatch(ui: &mut Ui, id: &str, linear: &mut [f32; 3], width: f32) ->
 /// A hex code field below the picker; returns true when a valid typed code changed `color`
 /// The typed text is kept while the field has focus, so a half-typed code is not rewritten
 fn hex_field(ui: &mut Ui, id: egui::Id, color: &mut Color32) -> bool {
-    let mut text = if ui.memory(|m| m.has_focus(id)) {
-        ui.data(|d| d.get_temp::<String>(id)).unwrap_or_else(|| hex_text(*color))
-    } else {
-        hex_text(*color)
-    };
+    let mut text = if ui.memory(|m| m.has_focus(id)) { ui.data(|d| d.get_temp::<String>(id)).unwrap_or_else(|| hex_text(*color)) } else { hex_text(*color) };
 
     ui.horizontal(|ui| {
         ui.label(tr("Hex"));
@@ -316,6 +312,7 @@ pub fn panel_header(ui: &mut Ui, title: &str, trailing: impl FnOnce(&mut Ui)) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use egui_kittest::kittest::Queryable;
 
     fn clear_button_harness(text: &str) -> egui_kittest::Harness<'static, String> {
         egui_kittest::Harness::builder().build_ui_state(
