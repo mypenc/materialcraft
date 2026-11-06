@@ -238,11 +238,7 @@ pub fn color_swatch(ui: &mut Ui, id: &str, linear: &mut [f32; 3], width: f32) ->
 /// A hex code field below the picker; returns true when a valid typed code changed `color`
 /// The typed text is kept while the field has focus, so a half-typed code is not rewritten
 fn hex_field(ui: &mut Ui, id: egui::Id, color: &mut Color32) -> bool {
-    let mut text = if ui.memory(|m| m.has_focus(id)) {
-        ui.data(|d| d.get_temp::<String>(id)).unwrap_or_else(|| hex_text(*color))
-    } else {
-        hex_text(*color)
-    };
+    let mut text = if ui.memory(|m| m.has_focus(id)) { ui.data(|d| d.get_temp::<String>(id)).unwrap_or_else(|| hex_text(*color)) } else { hex_text(*color) };
 
     ui.horizontal(|ui| {
         ui.label(tr("Hex"));
